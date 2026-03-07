@@ -33,6 +33,9 @@ const ROTATE_POSITION_OUT = new UDim2(0.257, 0, 1, 0);
 const tweenFast = new TweenInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 const tweenSlow = new TweenInfo(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 
+
+// tweens
+
 const Tweens = {
 	labelIn: TweenService.Create(BuildLabel, tweenFast, { Position: LABEL_POSITION_IN }),
 	labelOut: TweenService.Create(BuildLabel, tweenFast, { Position: LABEL_POSITION_OUT }),
@@ -76,6 +79,8 @@ function setDeleteMode(value: boolean, preview: Part) {
 	}
 }
 
+// grid snapping function 
+
 export function snapToGrid(position: Vector3): Vector3 {
 	return new Vector3(
 		math.round(position.X / GridSize) * GridSize + GridSize / 2,
@@ -84,6 +89,8 @@ export function snapToGrid(position: Vector3): Vector3 {
 	);
 }
 
+// sends a raycast to the mouse and returns what it touched
+
 function getRaycastResult(preview: Part): RaycastResult | undefined {
 	const unitRay = camera.ScreenPointToRay(mouse.X, mouse.Y);
 	const raycastParams = new RaycastParams();
@@ -91,6 +98,8 @@ function getRaycastResult(preview: Part): RaycastResult | undefined {
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
 	return Workspace.Raycast(unitRay.Origin, unitRay.Direction.mul(MAX_REACH), raycastParams) ?? undefined;
 }
+
+// preview block
 
 function createPreview(): Part {
 	const preview = new Instance("Part");
@@ -104,6 +113,8 @@ function createPreview(): Part {
 	preview.Name = "BuildPreview";
 	return preview;
 }
+
+// flamework controller 
 
 @Controller()
 export class BuildController implements OnStart {
@@ -134,7 +145,7 @@ export class BuildController implements OnStart {
 			if (!buildMode) return;
 
 			if (input.KeyCode === Enum.KeyCode.R) {
-				currentRotation = (currentRotation + 90) % 360;
+				currentRotation = (currentRotation + 90) % 360; // allows a rotation of up to 360 degrees and then start over at 0 again
 			}
 
 			if (input.KeyCode === Enum.KeyCode.F) {
@@ -185,6 +196,7 @@ export class BuildController implements OnStart {
 						lastHovered = hit;
 
 						if (isHoldingMouse) {
+							// (allows holding mouse button 1 to delete blocks)
 							deleteBlockEvent.FireServer(hit);
 							lastHovered = undefined;
 						}
@@ -195,8 +207,10 @@ export class BuildController implements OnStart {
 				const snapped = snapToGrid(result.Position);
 				preview.Transparency = 0.5;
 				preview.CFrame = new CFrame(snapped).mul(CFrame.Angles(0, math.rad(currentRotation), 0));
+				
 
 				if (isHoldingMouse) {
+					// (allows holding mouse button 1 to build)
 					placeBlockEvent.FireServer(snapped, currentRotation);
 				}
 			} else {
