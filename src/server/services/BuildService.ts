@@ -33,6 +33,9 @@ const tweenInfo = new TweenInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection
 const tweenInfo2 = new TweenInfo(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 const tweenInfo3 = new TweenInfo(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 
+
+// checks if a block has already been placed on the grid
+
 function isOccupied(position: Vector3): boolean {
 	for (const block of blocksFolder.GetChildren()) {
 		if (block.IsA("BasePart")) {
@@ -44,6 +47,9 @@ function isOccupied(position: Vector3): boolean {
 	return false;
 }
 
+// checks if a block has already been placed on the grid
+
+
 export function snapToGrid(position: Vector3): Vector3 {
 	print("snapped to most nearby Grid");
 	return new Vector3(
@@ -52,6 +58,8 @@ export function snapToGrid(position: Vector3): Vector3 {
 		math.round(position.Z / GridSize) * GridSize + GridSize / 2,
 	);
 }
+
+// snaps to grid
 
 @Service()
 export class BuildService implements OnStart {
@@ -86,6 +94,8 @@ export class BuildService implements OnStart {
 			block.Material = Enum.Material.SmoothPlastic;
 			block.Parent = blocksFolder;
 
+			// Creates a Basic block
+
 			const tween = TweenService.Create(block, tweenInfo, {
 				Size: new Vector3(OvershootSize, OvershootSize, OvershootSize),
 			});
@@ -98,24 +108,29 @@ export class BuildService implements OnStart {
 			});
 		});
 
+		//smoothly tweens the blocks in when placed
+
 		deleteBlockEvent.OnServerEvent.Connect((player, RawBlock) => {
 			const block = RawBlock as BasePart;
-			if (!block || !block.IsA("BasePart")) return;
-			if (block.Parent !== blocksFolder) return;
+			if (!block || !block.IsA("BasePart")) return; //returns if its not a block/block is not a basepart
+			if (block.Parent !== blocksFolder) return; // returns if the blocks parent is not equal to the blocksfolder
 
 			const now = os.clock();
 			const last = lastAction.get(player) ?? 0;
-			if (now - last < 0.05) return;
+			if (now - last < 0.05) return; // cooldown
 			lastAction.set(player, now);
 
 			const tween = TweenService.Create(block, tweenInfo3, {
 				Size: new Vector3(0.1, 0.1, 0.1),
 				Transparency: 1,
 			});
+			
 			tween.Play();
 			tween.Completed.Connect(() => {
 				block.Destroy();
 			});
+
+			//smoothly tweens the block out
 		});
 	}
 }
